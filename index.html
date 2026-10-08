@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#060913">
+  <title>Lolita em: A Fuga do Banho! | Campeonato da Família Sales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #060913;
+      color: #fff;
+      font-family: 'Fredoka', cursive, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #gameContainer {
+      position: relative;
+      width: 96vw;
+      max-width: 580px;
+      aspect-ratio: 19 / 23;
+      max-height: 94vh;
+      max-height: 94dvh;
+      background: #03060d;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.2);
+      border: 3px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      touch-action: none;
+    }
+
+    /* TOPO DO JOGO: HUD */
+    .game-header {
+      height: 48px;
+      padding: 6px 14px;
+      background: rgba(10, 15, 30, 0.95);
+      border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 3px 9px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .stat-pill.score i { color: #fbbf24; }
+    .stat-pill.lives i { color: #f43f5e; }
+    .stat-pill.rescues i { color: #ec4899; }
+
+    .header-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .header-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .header-btn:hover { background: rgba(56, 189, 248, 0.3); }
+
+    /* ÁREA DO CANVAS */
+    .canvas-wrap {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      background: #02040a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 456px;
+      max-height: 504px;
+      image-rendering: pixelated;
+    }
+
+    /* CONTROLES MOBILE TOUCH NA TELA */
+    .mobile-touch-panel {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .dpad-container {
+      position: relative;
+      width: 144px;
+      height: 144px;
+      pointer-events: auto;
+    }
+
+    .dpad-center {
+      position: absolute;
+      top: 48px;
+      left: 48px;
+      width: 48px;
+      height: 48px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(56, 189, 248, 0.6);
+      font-size: 0.9rem;
+    }
+
+    .dpad-btn {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 2px solid rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      transition: transform 0.1s, background 0.1s;
+    }
+    .dpad-btn:active {
+      transform: scale(0.9);
+      background: rgba(56, 189, 248, 0.5);
+      color: #fff;
+    }
+
+    .dpad-btn.up { top: 0; left: 48px; border-radius: 12px 12px 4px 4px; }
+    .dpad-btn.down { bottom: 0; left: 48px; border-radius: 4px 4px 12px 12px; }
+    .dpad-btn.left { top: 48px; left: 0; border-radius: 12px 4px 4px 12px; }
+    .dpad-btn.right { top: 48px; right: 0; border-radius: 4px 12px 12px 4px; }
+
+    .action-touch-btn {
+      pointer-events: auto;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border: 2px solid #fff;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.74rem;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+      transition: transform 0.1s;
+    }
+    .action-touch-btn:active { transform: scale(0.9); }
+    .action-touch-btn i { font-size: 1.35rem; margin-bottom: 2px; }
+
+    /* OVERLAYS / TELAS */
+    .screen-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(6, 10, 22, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+      z-index: 50;
+      overflow-y: auto;
+    }
+    .screen-overlay.hidden { display: none !important; }
+
+    .game-logo {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #fbbf24;
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+      margin-bottom: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .game-logo span {
+      font-size: 1.15rem;
+      color: #ec4899;
+      letter-spacing: 1px;
+    }
+
+    .game-subtitle {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      max-width: 440px;
+      line-height: 1.3;
+    }
+
+    .lore-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(236, 72, 153, 0.3);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      max-width: 430px;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: #e2e8f0;
+      text-align: left;
+    }
+
+    .lore-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .player-card {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      border-radius: 14px;
+      padding: 8px 14px;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .player-card label {
+      font-size: 0.78rem;
+      color: #fbbf24;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .player-card input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      text-align: center;
+      outline: none;
+      margin-bottom: 6px;
+    }
+    .quick-badges {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .badge-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .badge-btn.active {
+      background: #ec4899;
+      border-color: #f43f5e;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .btn-main {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: 2px solid #34d399;
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 9999px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+      transition: transform 0.15s;
+    }
+    .btn-main:active { transform: scale(0.95); }
+
+    .btn-alt {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    /* RANKING LEADERBOARD */
+    .ranking-box {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+    }
+    .ranking-title {
+      font-size: 0.95rem;
+      color: #fbbf24;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .ranking-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .ranking-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+    .ranking-row.top1 { background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.4); }
+
+    /* TOAST DE SUPER PODER */
+    .power-toast {
+      position: absolute;
+      top: 58px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      border: 2px solid #fff;
+      color: #fff;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      box-shadow: 0 8px 25px rgba(236, 72, 153, 0.6);
+      display: none;
+      z-index: 25;
+      text-align: center;
+      white-space: nowrap;
+      animation: pulseToast 0.8s infinite alternate;
+    }
+    @keyframes pulseToast {
+      from { transform: translateX(-50%) scale(1); }
+      to { transform: translateX(-50%) scale(1.06); }
+    }
+
+    /* FULLSCREEN E RESPONSIVIDADE MOBILE NATIVA */
+    :fullscreen #gameContainer,
+    :-webkit-full-screen #gameContainer,
+    #gameContainer:fullscreen,
+    #gameContainer:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+    }
+
+    /* ADAPTAÇÃO ERGONÔMICA PARA CELULAR (MOBILE-FIRST) */
+    @media (max-width: 640px) {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      #gameContainer {
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        max-width: 100vw !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        aspect-ratio: auto !important;
+        box-shadow: none !important;
+        justify-content: space-between;
+      }
+      .game-header {
+        height: 44px;
+        padding: 4px 10px;
+      }
+      .stat-pill {
+        font-size: 0.76rem;
+        padding: 2px 7px;
+        gap: 3px;
+      }
+      .canvas-wrap {
+        flex: 1 1 auto;
+        width: 100vw;
+        max-width: 100vw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      canvas {
+        max-height: 60vh;
+        max-width: 96vw;
+        aspect-ratio: 19 / 21;
+      }
+      .mobile-touch-panel {
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: 100% !important;
+        flex: 0 0 auto;
+        display: flex !important;
+        align-items: center;
+        justify-content: space-around;
+        padding: 8px 16px 14px 16px;
+        background: rgba(10, 15, 30, 0.98);
+        border-top: 1px solid rgba(56, 189, 248, 0.25);
+        pointer-events: auto;
+      }
+      .dpad-container {
+        width: 132px;
+        height: 132px;
+      }
+      .dpad-center {
+        width: 44px;
+        height: 44px;
+        top: 44px;
+        left: 44px;
+      }
+      .dpad-btn {
+        width: 44px;
+        height: 44px;
+      }
+      .dpad-btn.up { top: 0; left: 44px; }
+      .dpad-btn.down { bottom: 0; left: 44px; }
+      .dpad-btn.left { top: 44px; left: 0; }
+      .dpad-btn.right { top: 44px; right: 0; }
+      .action-touch-btn {
+        width: 76px;
+        height: 76px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="gameContainer">
+    <!-- TOPO / HUD -->
+    <div class="game-header">
+      <div class="header-info">
+        <div class="stat-pill score"><i class="fas fa-bone"></i> <span id="hudScore">0</span></div>
+        <div class="stat-pill lives"><i class="fas fa-heart"></i> <span id="hudLives">3</span></div>
+        <div class="stat-pill rescues"><i class="fas fa-shield-heart"></i> <span id="hudRescues">0/5</span></div>
+        <div class="stat-pill pellets"><i class="fas fa-cookie-bite" style="color:#fbbf24;"></i> <span id="hudPellets">133</span></div>
+      </div>
+      <div class="header-btns">
+        <button id="btnSound" class="header-btn" title="Som"><i class="fas fa-volume-up"></i></button>
+        <button id="btnFS" class="header-btn" title="Tela Cheia"><i class="fas fa-expand"></i></button>
+        <button id="btnPause" class="header-btn" title="Pausar"><i class="fas fa-pause"></i></button>
+      </div>
+    </div>
+
+    <!-- ÁREA DO LABIRINTO (CANVAS) -->
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" width="456" height="504"></canvas>
+      <div id="powerToast" class="power-toast">🎾 SUPER BOLA! PEGUE OS VILÕES DO BANHO!</div>
+    </div>
+
+    <!-- CONTROLES MOBILE TOUCH -->
+    <div id="mobileTouchPanel" class="mobile-touch-panel" style="display: none;">
+      <div class="dpad-container">
+        <button class="dpad-btn up" data-dir="UP"><i class="fas fa-caret-up"></i></button>
+        <button class="dpad-btn down" data-dir="DOWN"><i class="fas fa-caret-down"></i></button>
+        <button class="dpad-btn left" data-dir="LEFT"><i class="fas fa-caret-left"></i></button>
+        <button class="dpad-btn right" data-dir="RIGHT"><i class="fas fa-caret-right"></i></button>
+        <div class="dpad-center"><i class="fas fa-paw"></i></div>
+      </div>
+      <button id="btnBarkTouch" class="action-touch-btn" title="Latir Au Au!">
+        <i class="fas fa-comment-dots"></i>
+        <span>AU! AU!</span>
+      </button>
+    </div>
+
+    <!-- TELA INICIAL (START) -->
+    <div id="startScreen" class="screen-overlay">
+      <h1 class="game-logo">Lolita <span>EM: A FUGA DO BANHO!</span></h1>
+      <p class="game-subtitle">A heroína poodle preta comendo ossinhos e <b>fugindo do banho</b>!</p>
+
+      <div class="lore-card">
+        <div class="lore-item"><i class="fas fa-bone" style="color: #fbbf24;"></i> Coma todos os <b>petiscos</b> e fuja dos monstros do banho!</div>
+        <div class="lore-item"><i class="fas fa-baseball" style="color: #38bdf8;"></i> Pegue as <b>Super Bolinhas</b> nos cantos para virar o jogo!</div>
+        <div class="lore-item"><i class="fas fa-shield-heart" style="color: #ec4899;"></i> Salve <b>Papai Sales</b>, <b>Mamãe Kássia</b>, <b>Vovó Chagas</b>, <b>Lorena</b> e <b>Diana</b>!</div>
+        <div class="lore-item"><i class="fas fa-bolt" style="color: #f59e0b;"></i> <b>SUPER PODER FAMILIAR:</b> Papai e Mamãe ganham aura e te ajudam a derrotar os monstros!</div>
+        <div class="lore-item"><i class="fas fa-shower" style="color: #f43f5e;"></i> Vilões do banho: <b>Chuveiro Maluco</b>, <b>Banheira</b>, <b>Shampoo</b> e <b>Secador</b>!</div>
+      </div>
+
+      <div class="player-card">
+        <label for="playerNameInput"><i class="fas fa-id-card"></i> Digite seu Nome para o Ranking:</label>
+        <input type="text" id="playerNameInput" placeholder="Seu nome..." maxlength="20" value="Papai Sales 👔">
+        <div class="quick-badges">
+          <button type="button" class="badge-btn active" data-name="Papai Sales 👔">👔 Papai</button>
+          <button type="button" class="badge-btn" data-name="Mamãe Kássia 💖">💖 Mamãe</button>
+          <button type="button" class="badge-btn" data-name="Vovó Chagas 👵">👵 Vovó</button>
+          <button type="button" class="badge-btn" data-name="Lorena (Sobrinha) 👧">👧 Lorena</button>
+          <button type="button" class="badge-btn" data-name="Diana (Cachorro) 🐶">🐶 Diana</button>
+        </div>
+      </div>
+
+      <button id="btnStart" class="btn-main"><i class="fas fa-play"></i> Jogar A Fuga do Banho!</button>
+      <button id="btnStartFS" class="btn-alt"><i class="fas fa-expand"></i> Jogar em Tela Cheia</button>
+    </div>
+
+    <!-- TELA DE PAUSA -->
+    <div id="pauseScreen" class="screen-overlay hidden">
+      <h2 class="game-logo">JOGO <span>PAUSADO</span></h2>
+      <p class="game-subtitle">Descansando da perseguição do banho...</p>
+      <button id="btnResume" class="btn-main"><i class="fas fa-play"></i> Continuar Fugindo!</button>
+    </div>
+
+    <!-- TELA DE VITÓRIA / NÍVEL CONCLUÍDO -->
+    <div id="victoryScreen" class="screen-overlay hidden">
+      <h2 class="game-logo" style="color: #10b981;">NÍVEL <span>CONCLUÍDO!</span> 🏆</h2>
+      <p class="game-subtitle">Você limpou o labirinto e salvou toda a família!</p>
+      <button id="btnNextLevel" class="btn-main"><i class="fas fa-forward"></i> Próximo Nível (Mais Rápido!)</button>
+    </div>
+
+    <!-- TELA DE GAME OVER & RANKING -->
+    <div id="gameOverScreen" class="screen-overlay hidden">
+      <h2 class="game-logo" style="color: #f43f5e;">GAME <span>OVER</span></h2>
+      <p class="game-subtitle">Hora do banho! As 4 patinhas ficaram pro ar pedindo dengo... 🥺🐾</p>
+
+      <div class="ranking-box">
+        <div class="ranking-title"><i class="fas fa-trophy"></i> RANKING DA FAMÍLIA SALES</div>
+        <ul id="rankingList" class="ranking-list"></ul>
+      </div>
+
+      <button id="btnRestart" class="btn-main"><i class="fas fa-rotate-right"></i> Jogar de Novo</button>
+      <button id="btnShareZap" class="btn-alt"><i class="fab fa-whatsapp"></i> Desafiar no Zap da Família</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // UI REFS
+    const hudScore = document.getElementById('hudScore');
+    const hudLives = document.getElementById('hudLives');
+    const hudRescues = document.getElementById('hudRescues');
+    const powerToast = document.getElementById('powerToast');
+    const startScreen = document.getElementById('startScreen');
+    const pauseScreen = document.getElementById('pauseScreen');
+    const victoryScreen = document.getElementById('victoryScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const rankingList = document.getElementById('rankingList');
+    const playerNameInput = document.getElementById('playerNameInput');
+
+    const btnStart = document.getElementById('btnStart');
+    const btnStartFS = document.getElementById('btnStartFS');
+    const btnResume = document.getElementById('btnResume');
+    const btnRestart = document.getElementById('btnRestart');
+    const btnNextLevel = document.getElementById('btnNextLevel');
+    const btnPause = document.getElementById('btnPause');
+    const btnSound = document.getElementById('btnSound');
+    const btnFS = document.getElementById('btnFS');
+    const btnBarkTouch = document.getElementById('btnBarkTouch');
+    const btnShareZap = document.getElementById('btnShareZap');
+
+    // WEB AUDIO SINTETIZADOR
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, type, duration, gainVal) {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal || 0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration || 0.08));
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + (duration || 0.08));
+      } catch (e) {}
+    }
+
+    let wakaToggle = false;
+    function soundChomp() {
+      wakaToggle = !wakaToggle;
+      playTone(wakaToggle ? 380 : 490, 'triangle', 0.06, 0.12);
+    }
+
+    function soundPower() {
+      playTone(600, 'square', 0.25, 0.15);
+      setTimeout(() => playTone(880, 'square', 0.35, 0.18), 120);
+    }
+
+    function soundEatGhost() {
+      playTone(350, 'sawtooth', 0.08, 0.2);
+      setTimeout(() => playTone(550, 'sawtooth', 0.1, 0.2), 60);
+      setTimeout(() => playTone(800, 'sine', 0.15, 0.2), 120);
+    }
+
+    function soundRescue() {
+      [523, 659, 783, 1046].forEach((f, i) => {
+        setTimeout(() => playTone(f, 'sine', 0.15, 0.18), i * 75);
+      });
+    }
+
+    function soundHeroPower() {
+      [440, 554, 659, 880, 1108].forEach((f, i) => {
+        setTimeout(() => playTone(f, 'square', 0.18, 0.18), i * 65);
+      });
+    }
+
+    function soundBark() {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.14);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(800, now);
+        filter.Q.setValueAtTime(3.5, now);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.16);
+      } catch (e) {}
+    }
+
+    // MAPA DO LABIRINTO (19 colunas x 21 linhas)
+    // 1: Parede, 2: Petisco, 3: Super Bola, 4: Familiar, 5: Túnel, 6: Casa Banho, 0: Vazio
+    const MAP_TEMPLATE = [
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,3,2,2,2,2,2,2,1,1,1,2,2,2,2,2,2,3,1],
+      [1,2,1,1,2,1,1,2,1,1,1,2,1,1,2,1,1,2,1],
+      [1,2,1,1,2,1,1,2,2,4,2,2,1,1,2,1,1,2,1],
+      [1,2,2,4,2,2,2,2,1,1,1,2,2,2,2,4,2,2,1],
+      [1,2,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,2,1],
+      [1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],
+      [1,1,1,1,2,1,1,1,0,1,0,1,1,1,2,1,1,1,1],
+      [0,0,0,1,2,1,0,0,0,0,0,0,0,1,2,1,0,0,0],
+      [1,1,1,1,2,1,0,1,1,6,1,1,0,1,2,1,1,1,1],
+      [5,0,0,0,2,0,0,1,6,6,6,1,0,0,2,0,0,0,5],
+      [1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],
+      [0,0,0,1,2,1,0,0,0,0,0,0,0,1,2,1,0,0,0],
+      [1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],
+      [1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,1],
+      [1,2,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,2,1],
+      [1,3,2,1,4,2,2,2,2,0,2,2,2,2,4,1,2,3,1],
+      [1,1,2,1,2,1,2,1,1,1,1,1,2,1,2,1,2,1,1],
+      [1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],
+      [1,2,1,1,1,1,1,1,2,1,2,1,1,1,1,1,1,2,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+
+    const COLS = 19;
+    const ROWS = 21;
+    const TILE_SIZE = 24;
+
+    let grid = [];
+    let totalPellets = 0;
+    let pelletsEaten = 0;
+
+    // FAMILIARES NOS PONTOS (5 PERSONAGENS OFICIAIS)
+    const familyMembers = [
+      { id: 'papai', name: 'Papai Sales 👔', shortName: 'Papai', emoji: '👔', color: '#3b82f6', hair: '#1e293b', isParent: true, isDog: false, saved: false, x: 0, y: 0 },
+      { id: 'mamae', name: 'Mamãe Kássia 💖', shortName: 'Mamãe', emoji: '💖', color: '#ec4899', hair: '#b45309', isParent: true, isDog: false, saved: false, x: 0, y: 0 },
+      { id: 'diana', name: 'Diana (Cachorro) 🐶', shortName: 'Diana', emoji: '🐶', color: '#10b981', hair: '#b45309', isParent: false, isDog: true, saved: false, x: 0, y: 0 },
+      { id: 'vovo', name: 'Vovó Chagas 👵', shortName: 'Vovó', emoji: '👵', color: '#8b5cf6', hair: '#cbd5e1', isParent: false, isDog: false, saved: false, x: 0, y: 0 },
+      { id: 'lorena', name: 'Lorena (Sobrinha) 👧', shortName: 'Lorena', emoji: '👧', color: '#f59e0b', hair: '#78350f', isParent: false, isDog: false, saved: false, x: 0, y: 0 }
+    ];
+
+    let companion = null;
+
+    // JOGADOR (POODLE HEROÍNA)
+    const player = {
+      x: 9,
+      y: 16,
+      pixelX: 9 * TILE_SIZE + 12,
+      pixelY: 16 * TILE_SIZE + 12,
+      dirX: 0,
+      dirY: 0,
+      nextDirX: 0,
+      nextDirY: 0,
+      speed: 2.3,
+      mouthAngle: 0.2,
+      mouthSpeed: 0.04,
+      barkTimer: 0,
+      spinTimer: 0,
+
+      reset() {
+        this.x = 9;
+        this.y = 16;
+        this.pixelX = 9 * TILE_SIZE + 12;
+        this.pixelY = 16 * TILE_SIZE + 12;
+        this.dirX = -1;
+        this.dirY = 0;
+        this.nextDirX = -1;
+        this.nextDirY = 0;
+        this.speed = 2.4;
+        this.barkTimer = 0;
+        this.spinTimer = 0;
+      },
+
+      bark() {
+        soundBark();
+        this.barkTimer = 30;
+      }
+    };
+
+    // INIMIGOS (OS 4 VILÕES DO BANHO COM FORMATOS TEMÁTICOS)
+    const enemies = [
+      {
+        name: 'Banheira',
+        type: 'bath',
+        color: '#ef4444',
+        icon: '🛁',
+        x: 9, y: 8,
+        pixelX: 9 * TILE_SIZE + 12,
+        pixelY: 8 * TILE_SIZE + 12,
+        dirX: -1, dirY: 0,
+        speed: 1.8,
+        homeX: 9, homeY: 8,
+        state: 'CHASE',
+        exitDelay: 0,
+        lastTurnTileX: -1,
+        lastTurnTileY: -1
+      },
+      {
+        name: 'Shampoo',
+        type: 'shampoo',
+        color: '#ec4899',
+        icon: '🧴',
+        x: 8, y: 10,
+        pixelX: 8 * TILE_SIZE + 12,
+        pixelY: 10 * TILE_SIZE + 12,
+        dirX: 0, dirY: -1,
+        speed: 1.7,
+        homeX: 8, homeY: 10,
+        state: 'IN_HOUSE',
+        exitDelay: 60,
+        lastTurnTileX: -1,
+        lastTurnTileY: -1
+      },
+      {
+        name: 'Secador',
+        type: 'dryer',
+        color: '#06b6d4',
+        icon: '💨',
+        x: 9, y: 10,
+        pixelX: 9 * TILE_SIZE + 12,
+        pixelY: 10 * TILE_SIZE + 12,
+        dirX: 0, dirY: 1,
+        speed: 1.9,
+        homeX: 9, homeY: 10,
+        state: 'IN_HOUSE',
+        exitDelay: 150,
+        lastTurnTileX: -1,
+        lastTurnTileY: -1
+      },
+      {
+        name: 'Chuveiro',
+        type: 'shower',
+        color: '#f97316',
+        icon: '🚿',
+        x: 10, y: 10,
+        pixelX: 10 * TILE_SIZE + 12,
+        pixelY: 10 * TILE_SIZE + 12,
+        dirX: 0, dirY: -1,
+        speed: 1.6,
+        homeX: 10, homeY: 10,
+        state: 'IN_HOUSE',
+        exitDelay: 240,
+        lastTurnTileX: -1,
+        lastTurnTileY: -1
+      }
+    ];
+
+    function countRemainingPellets() {
+      let count = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (grid[r][c] === 2 || grid[r][c] === 4) count++;
+        }
+      }
+      return count;
+    }
+
+    // ESTADO DO JOGO
+    let gameState = 'START';
+    let score = 0;
+    let lives = 3;
+    let rescuesCount = 0;
+    let level = 1;
+    let powerMode = false;
+    let powerTimer = 0;
+    let ghostsEatenChain = 0;
+    let floatingTexts = [];
+    let currentPlayer = 'Papai Sales 👔';
+
+    // SISTEMA DE RANKING
+    const DEFAULT_LEADERBOARD = [
+      { name: 'Mamãe Kássia 💖', score: 3200 },
+      { name: 'Papai Sales 👔', score: 2850 },
+      { name: 'Lorena (Sobrinha) 👧', score: 2150 },
+      { name: 'Vovó Chagas 👵', score: 1750 },
+      { name: 'Diana (Cachorro) 🐶', score: 1400 }
+    ];
+
+    function getLeaderboard() {
+      const s = localStorage.getItem('come_come_leaderboard');
+      if (!s) return DEFAULT_LEADERBOARD;
+      try { return JSON.parse(s); } catch(e) { return DEFAULT_LEADERBOARD; }
+    }
+
+    function saveScore(name, sc) {
+      let list = getLeaderboard();
+      list.push({ name: name, score: sc });
+      list.sort((a, b) => b.score - a.score);
+      list = list.slice(0, 6);
+      localStorage.setItem('come_come_leaderboard', JSON.stringify(list));
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      rankingList.innerHTML = '';
+      const list = getLeaderboard();
+      list.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'ranking-row' + (idx === 0 ? ' top1' : '');
+        const medal = idx === 0 ? '🥇 ' : idx === 1 ? '🥈 ' : idx === 2 ? '🥉 ' : (idx + 1) + 'º ';
+        li.innerHTML = '<span><b>' + medal + '</b> ' + item.name + '</span> <span style="color:#fbbf24; font-weight:800;">' + item.score + ' pts</span>';
+        rankingList.appendChild(li);
+      });
+    }
+
+    // INICIALIZAR MAPA
+    function initMap() {
+      grid = JSON.parse(JSON.stringify(MAP_TEMPLATE));
+      totalPellets = 0;
+      pelletsEaten = 0;
+      rescuesCount = 0;
+      hudRescues.textContent = '0/5';
+      companion = null;
+
+      let familyIdx = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (grid[r][c] === 2) totalPellets++;
+          else if (grid[r][c] === 4) {
+            totalPellets++;
+            if (familyIdx < familyMembers.length) {
+              familyMembers[familyIdx].x = c;
+              familyMembers[familyIdx].y = r;
+              familyMembers[familyIdx].saved = false;
+              familyIdx++;
+            }
+          }
+        }
+      }
+      const hp = document.getElementById('hudPellets');
+      if (hp) hp.textContent = countRemainingPellets();
+    }
+
+    function addFloatingText(x, y, text, color) {
+      floatingTexts.push({ x: x, y: y, text: text, color: color || '#fbbf24', alpha: 1, life: 60 });
+    }
+
+    // COLISÃO COM PAREDES E CASINHA
+    function canMoveTo(c, r) {
+      if (c < 0 || c >= COLS) return true; // Túnel lateral
+      if (r < 0 || r >= ROWS) return false;
+      const cell = grid[r][c];
+      return cell !== 1 && cell !== 6;
+    }
+
+    function canEnemyMoveTo(c, r) {
+      if (c < 0 || c >= COLS) return true; // Túnel lateral
+      if (r < 0 || r >= ROWS) return false;
+      const cell = grid[r][c];
+      return cell !== 1 && cell !== 6;
+    }
+
+    // CONTROLES DE MOVIMENTO DO JOGADOR
+    function setDirection(dx, dy) {
+      player.nextDirX = dx;
+      player.nextDirY = dy;
+      if (player.dirX === 0 && player.dirY === 0) {
+        const curTileX = Math.floor(player.pixelX / TILE_SIZE);
+        const curTileY = Math.floor(player.pixelY / TILE_SIZE);
+        if (canMoveTo(curTileX + dx, curTileY + dy)) {
+          player.dirX = dx;
+          player.dirY = dy;
+        }
+      }
+    }
+
+    // ATUALIZAÇÃO DO JOGO
+    function update() {
+      if (gameState !== 'PLAYING') return;
+
+      // ATUALIZAÇÃO DO SUPER PODER
+      if (powerMode) {
+        powerTimer--;
+        if (powerTimer <= 0) {
+          powerMode = false;
+          powerToast.style.display = 'none';
+        }
+      }
+
+      // ATUALIZAÇÃO DO COMPANHEIRO SUPER HERÓI
+      if (companion) {
+        companion.timer--;
+        companion.angle += 0.08;
+        companion.pixelX = player.pixelX + Math.cos(companion.angle) * 26;
+        companion.pixelY = player.pixelY + Math.sin(companion.angle) * 26;
+
+        if (companion.timer <= 0) {
+          companion = null;
+          if (!powerMode) powerToast.style.display = 'none';
+        }
+      }
+
+      if (player.barkTimer > 0) player.barkTimer--;
+      if (player.spinTimer > 0) player.spinTimer--;
+
+      // MOVIMENTO ARCADE FLUIDO COM CORNERING & BUFFERING DE CONTROLE
+      const curTileX = Math.floor(player.pixelX / TILE_SIZE);
+      const curTileY = Math.floor(player.pixelY / TILE_SIZE);
+      const centerX = curTileX * TILE_SIZE + 12;
+      const centerY = curTileY * TILE_SIZE + 12;
+
+      // 1. Inversão instantânea (180°)
+      if (player.nextDirX === -player.dirX && player.nextDirY === -player.dirY && (player.dirX !== 0 || player.dirY !== 0)) {
+        player.dirX = player.nextDirX;
+        player.dirY = player.nextDirY;
+      }
+
+      // 2. Curva em 90° (Cornering inteligente com ampla tolerância de 11px)
+      if (player.nextDirX !== 0 || player.nextDirY !== 0) {
+        if (player.nextDirY !== 0) {
+          const distX = Math.abs(player.pixelX - centerX);
+          if (distX <= 11) {
+            const targetY = curTileY + player.nextDirY;
+            if (canMoveTo(curTileX, targetY)) {
+              player.pixelX = centerX;
+              player.dirX = 0;
+              player.dirY = player.nextDirY;
+            }
+          }
+        } else if (player.nextDirX !== 0) {
+          const distY = Math.abs(player.pixelY - centerY);
+          if (distY <= 11) {
+            const targetX = curTileX + player.nextDirX;
+            if (canMoveTo(targetX, curTileY)) {
+              player.pixelY = centerY;
+              player.dirX = player.nextDirX;
+              player.dirY = 0;
+            }
+          }
+        }
+      }
+
+      // 3. Deslocamento contínuo
+      if (player.dirX !== 0 || player.dirY !== 0) {
+        const nextTileX = curTileX + player.dirX;
+        const nextTileY = curTileY + player.dirY;
+
+        if (!canMoveTo(nextTileX, nextTileY)) {
+          if (player.dirX > 0 && player.pixelX >= centerX) {
+            player.pixelX = centerX;
+            player.dirX = 0;
+          } else if (player.dirX < 0 && player.pixelX <= centerX) {
+            player.pixelX = centerX;
+            player.dirX = 0;
+          } else if (player.dirY > 0 && player.pixelY >= centerY) {
+            player.pixelY = centerY;
+            player.dirY = 0;
+          } else if (player.dirY < 0 && player.pixelY <= centerY) {
+            player.pixelY = centerY;
+            player.dirY = 0;
+          } else {
+            player.pixelX += player.dirX * player.speed;
+            player.pixelY += player.dirY * player.speed;
+          }
+        } else {
+          player.pixelX += player.dirX * player.speed;
+          player.pixelY += player.dirY * player.speed;
+        }
+      }
+
+      // TÚNEL LATERAL (TELETRANSPORTE)
+      if (player.pixelX < -6) player.pixelX = COLS * TILE_SIZE + 6;
+      else if (player.pixelX > COLS * TILE_SIZE + 6) player.pixelX = -6;
+
+      // COMER PETISCOS E RESGATAR FAMÍLIA
+      const checkTileX = Math.floor(player.pixelX / TILE_SIZE);
+      const checkTileY = Math.floor(player.pixelY / TILE_SIZE);
+
+      if (checkTileX >= 0 && checkTileX < COLS && checkTileY >= 0 && checkTileY < ROWS) {
+        const item = grid[checkTileY][checkTileX];
+
+        // 2: Petisco
+        if (item === 2) {
+          grid[checkTileY][checkTileX] = 0;
+          score += 10;
+          pelletsEaten++;
+          hudScore.textContent = score;
+          soundChomp();
+        }
+        // 3: Super Bola de Brinquedo
+        else if (item === 3) {
+          grid[checkTileY][checkTileX] = 0;
+          score += 50;
+          hudScore.textContent = score;
+          powerMode = true;
+          powerTimer = 420;
+          ghostsEatenChain = 0;
+          player.spinTimer = 25;
+          soundPower();
+          player.bark();
+          powerToast.style.display = 'block';
+          powerToast.textContent = '🎾 SUPER BOLA! PEGUE OS VILÕES DO BANHO!';
+          addFloatingText(player.pixelX, player.pixelY - 16, '🎾 SUPER BOLA! ⚡', '#38bdf8');
+        }
+        // 4: Resgate de Familiar
+        else if (item === 4) {
+          grid[checkTileY][checkTileX] = 0;
+          score += 250;
+          pelletsEaten++;
+          hudScore.textContent = score;
+
+          const fam = familyMembers.find(f => f.x === checkTileX && f.y === checkTileY && !f.saved);
+          if (fam) {
+            fam.saved = true;
+            rescuesCount++;
+            hudRescues.textContent = rescuesCount + '/5';
+            soundRescue();
+            player.bark();
+            player.spinTimer = 30;
+            addFloatingText(player.pixelX, player.pixelY - 20, '🌟 SALVOU ' + fam.shortName + '! +250 PTS', fam.color);
+
+            // SUPER PODER DE PAPAI OU MAMÃE
+            if (fam.isParent) {
+              soundHeroPower();
+              companion = {
+                type: fam.id,
+                name: fam.name,
+                shortName: fam.shortName,
+                color: fam.color,
+                timer: 600,
+                maxTimer: 600,
+                pixelX: player.pixelX,
+                pixelY: player.pixelY,
+                angle: 0
+              };
+              powerMode = true;
+              powerTimer = Math.max(powerTimer, 500);
+              powerToast.style.display = 'block';
+              powerToast.textContent = (fam.id === 'papai' ? '👔 PAPAI SALES ATIVOU O SUPER PODER!' : '💖 MAMÃE KÁSSIA ATIVOU O ESCUDO DO AMOR!') + ' DESTRUINDO O BANHO!';
+              addFloatingText(player.pixelX, player.pixelY - 35, '⚡ SUPER PODER ATIVADO! ⚡', '#fbbf24');
+            }
+          }
+        }
+      }
+
+      // ATUALIZA HUD DE PETISCOS RESTANTES
+      const remaining = countRemainingPellets();
+      const hp = document.getElementById('hudPellets');
+      if (hp) hp.textContent = remaining;
+
+      // VITÓRIA DO NÍVEL
+      if (remaining === 0) {
+        gameState = 'VICTORY';
+        victoryScreen.classList.remove('hidden');
+        soundRescue();
+        player.spinTimer = 40;
+        return;
+      }
+
+      // MOVIMENTO DOS INIMIGOS (BANHO)
+      enemies.forEach(en => {
+        // 1. DENTRO DA CASA
+        if (en.state === 'IN_HOUSE') {
+          en.exitDelay--;
+          en.pixelY += en.dirY * 0.5;
+          if (en.pixelY > 10 * TILE_SIZE + 16) en.dirY = -1;
+          if (en.pixelY < 10 * TILE_SIZE + 8) en.dirY = 1;
+
+          if (en.exitDelay <= 0) {
+            en.state = 'EXITING';
+          }
+          return;
+        }
+
+        // 2. SAINDO DA CASA ATRAVÉS DA PORTA
+        if (en.state === 'EXITING') {
+          const doorCenterX = 9 * TILE_SIZE + 12;
+          const doorTargetY = 8 * TILE_SIZE + 12;
+
+          if (Math.abs(en.pixelX - doorCenterX) > 1.5) {
+            en.pixelX += Math.sign(doorCenterX - en.pixelX) * 1.5;
+          } else {
+            en.pixelX = doorCenterX;
+            en.pixelY -= 1.6;
+            if (en.pixelY <= doorTargetY) {
+              en.pixelY = doorTargetY;
+              en.state = 'CHASE';
+              en.dirX = Math.random() < 0.5 ? -1 : 1;
+              en.dirY = 0;
+              en.lastTurnTileX = 9;
+              en.lastTurnTileY = 8;
+            }
+          }
+          return;
+        }
+
+        // 3. PATRULHA NO LABIRINTO (CHASE)
+        const enTileX = Math.floor(en.pixelX / TILE_SIZE);
+        const enTileY = Math.floor(en.pixelY / TILE_SIZE);
+        const enCenterX = enTileX * TILE_SIZE + 12;
+        const enCenterY = enTileY * TILE_SIZE + 12;
+
+        const distToC = Math.hypot(en.pixelX - enCenterX, en.pixelY - enCenterY);
+
+        if (distToC <= Math.max(en.speed, 2.5) && (enTileX !== en.lastTurnTileX || enTileY !== en.lastTurnTileY)) {
+          en.lastTurnTileX = enTileX;
+          en.lastTurnTileY = enTileY;
+          en.pixelX = enCenterX;
+          en.pixelY = enCenterY;
+
+          const dirs = [
+            { x: 0, y: -1 },
+            { x: 0, y: 1 },
+            { x: -1, y: 0 },
+            { x: 1, y: 0 }
+          ].filter(d => {
+            if (d.x === -en.dirX && d.y === -en.dirY) return false;
+            return canEnemyMoveTo(enTileX + d.x, enTileY + d.y);
+          });
+
+          if (dirs.length > 0) {
+            if (!powerMode && !companion) {
+              dirs.sort((a, b) => {
+                const distA = Math.hypot((enTileX + a.x) - checkTileX, (enTileY + a.y) - checkTileY);
+                const distB = Math.hypot((enTileX + b.x) - checkTileX, (enTileY + b.y) - checkTileY);
+                return distA - distB;
+              });
+              const chosen = Math.random() < 0.7 ? dirs[0] : dirs[Math.floor(Math.random() * dirs.length)];
+              en.dirX = chosen.x;
+              en.dirY = chosen.y;
+            } else {
+              dirs.sort((a, b) => {
+                const distA = Math.hypot((enTileX + a.x) - checkTileX, (enTileY + a.y) - checkTileY);
+                const distB = Math.hypot((enTileX + b.x) - checkTileX, (enTileY + b.y) - checkTileY);
+                return distB - distA;
+              });
+              en.dirX = dirs[0].x;
+              en.dirY = dirs[0].y;
+            }
+          } else {
+            en.dirX = -en.dirX;
+            en.dirY = -en.dirY;
+          }
+        }
+
+        const spd = (powerMode || companion) ? en.speed * 0.6 : en.speed;
+        en.pixelX += en.dirX * spd;
+        en.pixelY += en.dirY * spd;
+
+        if (en.pixelX < -6) en.pixelX = COLS * TILE_SIZE + 6;
+        else if (en.pixelX > COLS * TILE_SIZE + 6) en.pixelX = -6;
+
+        // COLISÃO COM O COMPANHEIRO SUPER HERÓI
+        if (companion) {
+          const distToComp = Math.hypot(companion.pixelX - en.pixelX, companion.pixelY - en.pixelY);
+          if (distToComp < 24) {
+            ghostsEatenChain++;
+            const pts = 500;
+            score += pts;
+            hudScore.textContent = score;
+            soundEatGhost();
+            addFloatingText(en.pixelX, en.pixelY - 14, (companion.type === 'papai' ? '👔 PAPAI ESPANTOU!' : '💖 MAMÃE PROTEGEU!') + ' +500', '#fbbf24');
+
+            en.state = 'IN_HOUSE';
+            en.exitDelay = 90;
+            en.pixelX = en.homeX * TILE_SIZE + 12;
+            en.pixelY = en.homeY * TILE_SIZE + 12;
+            en.dirX = 0;
+            en.dirY = -1;
+            en.lastTurnTileX = -1;
+            en.lastTurnTileY = -1;
+            return;
+          }
+        }
+
+        // COLISÃO COM O JOGADOR
+        const distToPlayer = Math.hypot(player.pixelX - en.pixelX, player.pixelY - en.pixelY);
+        if (distToPlayer < 16) {
+          if (powerMode || companion) {
+            ghostsEatenChain++;
+            const pts = Math.min(1600, 200 * Math.pow(2, ghostsEatenChain - 1));
+            score += pts;
+            hudScore.textContent = score;
+            soundEatGhost();
+            addFloatingText(en.pixelX, en.pixelY - 14, '+' + pts + '! 🫧', '#38bdf8');
+
+            en.state = 'IN_HOUSE';
+            en.exitDelay = 90;
+            en.pixelX = en.homeX * TILE_SIZE + 12;
+            en.pixelY = en.homeY * TILE_SIZE + 12;
+            en.dirX = 0;
+            en.dirY = -1;
+            en.lastTurnTileX = -1;
+            en.lastTurnTileY = -1;
+          } else {
+            lives--;
+            hudLives.textContent = lives;
+            playTone(180, 'sawtooth', 0.4, 0.25);
+
+            if (lives <= 0) {
+              gameState = 'GAMEOVER';
+              const mtp = document.getElementById('mobileTouchPanel'); if (mtp) mtp.style.display = 'none';
+              saveScore(currentPlayer, score);
+              setTimeout(() => gameOverScreen.classList.remove('hidden'), 500);
+            } else {
+              player.reset();
+              companion = null;
+              enemies[0].pixelX = 9 * TILE_SIZE + 12; enemies[0].pixelY = 8 * TILE_SIZE + 12; enemies[0].state = 'CHASE'; enemies[0].dirX = -1; enemies[0].dirY = 0; enemies[0].lastTurnTileX = -1; enemies[0].lastTurnTileY = -1;
+              enemies[1].pixelX = 8 * TILE_SIZE + 12; enemies[1].pixelY = 10 * TILE_SIZE + 12; enemies[1].state = 'IN_HOUSE'; enemies[1].exitDelay = 60; enemies[1].lastTurnTileX = -1; enemies[1].lastTurnTileY = -1;
+              enemies[2].pixelX = 9 * TILE_SIZE + 12; enemies[2].pixelY = 10 * TILE_SIZE + 12; enemies[2].state = 'IN_HOUSE'; enemies[2].exitDelay = 140; enemies[2].lastTurnTileX = -1; enemies[2].lastTurnTileY = -1;
+              enemies[3].pixelX = 10 * TILE_SIZE + 12; enemies[3].pixelY = 10 * TILE_SIZE + 12; enemies[3].state = 'IN_HOUSE'; enemies[3].exitDelay = 220; enemies[3].lastTurnTileX = -1; enemies[3].lastTurnTileY = -1;
+            }
+          }
+        }
+      });
+    }
+
+    // RENDERIZAÇÃO GRÁFICA DO JOGO
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // DESENHAR LABIRINTO
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const tile = grid[r][c];
+          const px = c * TILE_SIZE;
+          const py = r * TILE_SIZE;
+
+          // 1: Parede Neon Azul
+          if (tile === 1) {
+            ctx.fillStyle = '#081638';
+            ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+            ctx.strokeStyle = '#2563eb';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+          }
+          // 6: Porta da Casa de Banho
+          else if (tile === 6) {
+            ctx.fillStyle = '#1e1b4b';
+            ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = '#f43f5e';
+            ctx.fillRect(px + 2, py + 10, TILE_SIZE - 4, 4);
+          }
+          // 2: Petisco Crocante (Ossinho)
+          else if (tile === 2) {
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(px + 12, py + 12, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // 3: Super Bola de Brinquedo
+          else if (tile === 3) {
+            const glow = Math.sin(Date.now() * 0.008) * 2;
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(px + 12, py + 12, 6.5 + glow, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+          // 4: Familiar com Nome Visível
+          else if (tile === 4) {
+            const fam = familyMembers.find(f => f.x === c && f.y === r);
+            if (fam && !fam.saved) {
+              const hop = Math.abs(Math.sin(Date.now() * 0.006)) * 4;
+              ctx.save();
+              ctx.translate(px + 12, py + 12 - hop);
+
+              ctx.fillStyle = 'rgba(236, 72, 153, 0.3)';
+              ctx.beginPath();
+              ctx.arc(0, 0, 12, 0, Math.PI * 2);
+              ctx.fill();
+
+              if (fam.isDog) {
+                // Diana (Cachorrinha Dourada)
+                ctx.fillStyle = '#b45309';
+                ctx.beginPath();
+                ctx.arc(0, 1, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#92400e';
+                ctx.beginPath();
+                ctx.ellipse(-6, 0, 3, 5, Math.PI / 8, 0, Math.PI * 2);
+                ctx.ellipse(6, 0, 3, 5, -Math.PI / 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fed7aa';
+                ctx.beginPath();
+                ctx.arc(0, 3, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(0, 2, 1.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(-3, -1, 1.3, 0, Math.PI * 2);
+                ctx.arc(3, -1, 1.3, 0, Math.PI * 2);
+                ctx.fill();
+              } else {
+                ctx.fillStyle = fam.color;
+                ctx.fillRect(-6, 1, 12, 8);
+                ctx.fillStyle = '#fed7aa';
+                ctx.beginPath();
+                ctx.arc(0, -3, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = fam.hair;
+                ctx.beginPath();
+                ctx.arc(0, -5, 5.2, Math.PI, 0);
+                ctx.fill();
+                if (fam.id === 'papai') {
+                  ctx.fillStyle = '#ef4444';
+                  ctx.fillRect(-1.5, 3, 3, 4);
+                } else if (fam.id === 'mamae') {
+                  ctx.fillStyle = '#f43f5e';
+                  ctx.beginPath();
+                  ctx.arc(3, -7, 2, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+              }
+
+              // Plaquinha de Nome
+              ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+              ctx.beginPath();
+              ctx.roundRect(-22, -21, 44, 11, 4);
+              ctx.fill();
+              ctx.strokeStyle = fam.color;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+
+              ctx.fillStyle = '#fff';
+              ctx.font = 'bold 8px Fredoka';
+              ctx.textAlign = 'center';
+              ctx.fillText(fam.shortName, 0, -13);
+
+              ctx.restore();
+            }
+          }
+        }
+      }
+
+      // DESENHAR INIMIGOS (VILÕES DO BANHO)
+      enemies.forEach(en => {
+        ctx.save();
+        ctx.translate(en.pixelX, en.pixelY);
+
+        if (powerMode || companion) {
+          const wobble = Math.sin(Date.now() * 0.015) * 2;
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(0, -1, 10, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(-6, 6 + wobble, 4, 0, Math.PI * 2);
+          ctx.arc(6, 6 - wobble, 4, 0, Math.PI * 2);
+          ctx.arc(0, 8, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(-4, -2, 2.5, 0, Math.PI * 1.5);
+          ctx.arc(4, -2, 2.5, 0, Math.PI * 1.5);
+          ctx.stroke();
+        } else {
+          // 1. CHUVEIRO
+          if (en.type === 'shower') {
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillRect(-3, -11, 6, 4);
+            ctx.fillStyle = '#cbd5e1';
+            ctx.beginPath();
+            ctx.ellipse(0, -6, 11, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            const dropHop = (Date.now() * 0.02) % 6;
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(-5, 0 + dropHop, 2, 0, Math.PI * 2);
+            ctx.arc(0, 3 + dropHop, 2.2, 0, Math.PI * 2);
+            ctx.arc(5, 1 + dropHop, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(-4, -6, 2.5, 0, Math.PI * 2);
+            ctx.arc(4, -6, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#f97316';
+            ctx.beginPath();
+            ctx.arc(-4 + en.dirX, -6 + en.dirY, 1.2, 0, Math.PI * 2);
+            ctx.arc(4 + en.dirX, -6 + en.dirY, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // 2. BANHEIRA
+          else if (en.type === 'bath') {
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.roundRect(-10, -2, 20, 11, [2, 2, 6, 6]);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(-9, 9, 3, 3);
+            ctx.fillRect(6, 9, 3, 3);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.beginPath();
+            ctx.arc(-5, -3, 4, 0, Math.PI * 2);
+            ctx.arc(0, -4, 5, 0, Math.PI * 2);
+            ctx.arc(5, -3, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(5, -7, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(8, -7, 2, 1.5);
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(-4, 3, 2.5, 0, Math.PI * 2);
+            ctx.arc(2, 3, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(-4 + en.dirX, 3 + en.dirY, 1.2, 0, Math.PI * 2);
+            ctx.arc(2 + en.dirX, 3 + en.dirY, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // 3. SHAMPOO
+          else if (en.type === 'shampoo') {
+            ctx.fillStyle = '#f43f5e';
+            ctx.fillRect(-3, -11, 6, 3);
+            ctx.fillStyle = '#ec4899';
+            ctx.beginPath();
+            ctx.roundRect(-8, -8, 16, 17, 4);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(-5, -2, 10, 5);
+
+            ctx.fillStyle = '#bae6fd';
+            ctx.beginPath();
+            ctx.arc(0, -12, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(-3, 6, 2.2, 0, Math.PI * 2);
+            ctx.arc(3, 6, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(-3 + en.dirX, 6 + en.dirY, 1.1, 0, Math.PI * 2);
+            ctx.arc(3 + en.dirX, 6 + en.dirY, 1.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // 4. SECADOR
+          else if (en.type === 'dryer') {
+            ctx.fillStyle = '#0891b2';
+            ctx.fillRect(en.dirX >= 0 ? 3 : -11, -6, 8, 5);
+            ctx.fillStyle = '#06b6d4';
+            ctx.beginPath();
+            ctx.roundRect(-6, -8, 12, 9, 3);
+            ctx.fill();
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(-2, 1, 4, 7);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 1.2;
+            const windOff = (Date.now() * 0.02) % 4;
+            ctx.beginPath();
+            if (en.dirX >= 0) {
+              ctx.moveTo(11, -5); ctx.lineTo(15 + windOff, -5);
+              ctx.moveTo(11, -2); ctx.lineTo(14 + windOff, -2);
+            } else {
+              ctx.moveTo(-11, -5); ctx.lineTo(-15 - windOff, -5);
+              ctx.moveTo(-11, -2); ctx.lineTo(-14 - windOff, -2);
+            }
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(-2, -4, 2, 0, Math.PI * 2);
+            ctx.arc(2, -4, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(-2 + en.dirX, -4 + en.dirY, 1, 0, Math.PI * 2);
+            ctx.arc(2 + en.dirX, -4 + en.dirY, 1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        ctx.restore();
+      });
+
+      // DESENHAR O COMPANHEIRO SUPER HERÓI
+      if (companion) {
+        ctx.save();
+        ctx.translate(companion.pixelX, companion.pixelY);
+
+        const auraGlow = Math.sin(Date.now() * 0.01) * 3;
+        ctx.fillStyle = companion.type === 'papai' ? 'rgba(59, 130, 246, 0.4)' : 'rgba(236, 72, 153, 0.4)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 14 + auraGlow, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 11, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = companion.color;
+        ctx.fillRect(-5, 0, 10, 7);
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath();
+        ctx.arc(0, -3, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.roundRect(-18, -19, 36, 11, 3);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 7.5px Fredoka';
+        ctx.textAlign = 'center';
+        ctx.fillText('SUPER ' + companion.shortName.toUpperCase(), 0, -11);
+
+        ctx.restore();
+      }
+
+      // DESENHAR A HEROÍNA POODLE PRETA COM 2 OLHINHOS
+      ctx.save();
+      ctx.translate(player.pixelX, player.pixelY);
+
+      if (player.spinTimer > 0) {
+        ctx.rotate((player.spinTimer / 25) * Math.PI * 4);
+      }
+
+      if (companion) {
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(0, 0, 14, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Corpo
+      ctx.fillStyle = '#121217';
+      ctx.beginPath();
+      ctx.arc(0, 0, 9.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Topete
+      ctx.fillStyle = '#1e1e28';
+      ctx.beginPath();
+      ctx.arc(-3, -7, 4.2, 0, Math.PI * 2);
+      ctx.arc(3, -7, 4.2, 0, Math.PI * 2);
+      ctx.arc(0, -9, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Orelhas
+      ctx.fillStyle = '#121217';
+      ctx.beginPath();
+      ctx.ellipse(-7, -1, 3.5, 7.5, Math.PI / 12, 0, Math.PI * 2);
+      ctx.ellipse(7, -1, 3.5, 7.5, -Math.PI / 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Coleira Rosa
+      ctx.fillStyle = '#ec4899';
+      ctx.fillRect(-3, 6, 6, 2.8);
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(0, 9, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Boca
+      const angle = (player.dirX === 1) ? 0 :
+                    (player.dirX === -1) ? Math.PI :
+                    (player.dirY === 1) ? Math.PI / 2 :
+                    (player.dirY === -1) ? -Math.PI / 2 : 0;
+
+      const mouthOpen = Math.abs(Math.sin(Date.now() * 0.012)) * 0.55;
+      ctx.fillStyle = '#02040a';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, 10, angle - mouthOpen, angle + mouthOpen);
+      ctx.fill();
+
+      // 2 OLHINHOS
+      const eyeOffsetX = (player.dirX === -1) ? -2 : (player.dirX === 1) ? 2 : 0;
+      const eyeOffsetY = (player.dirY === -1) ? -2 : (player.dirY === 1) ? 1 : 0;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-3 + eyeOffsetX, -3 + eyeOffsetY, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.arc(-3 + eyeOffsetX * 1.3, -3 + eyeOffsetY * 1.3, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-3.8 + eyeOffsetX, -3.8 + eyeOffsetY, 0.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(3 + eyeOffsetX, -3 + eyeOffsetY, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.arc(3 + eyeOffsetX * 1.3, -3 + eyeOffsetY * 1.3, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(2.2 + eyeOffsetX, -3.8 + eyeOffsetY, 0.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Focinho
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(0 + eyeOffsetX, 0 + eyeOffsetY, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Latido
+      if (player.barkTimer > 0) {
+        ctx.fillStyle = '#fbbf24';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(8, -24, 48, 16, 5);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 9px Fredoka';
+        ctx.fillText('AU! AU!', 12, -12);
+      }
+
+      ctx.restore();
+
+      // TEXTOS FLUTUANTES
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y -= 0.8;
+        ft.alpha -= 1 / ft.life;
+        if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+        else {
+          ctx.save();
+          ctx.globalAlpha = ft.alpha;
+          ctx.fillStyle = ft.color;
+          ctx.font = 'bold 11px Fredoka';
+          ctx.fillText(ft.text, ft.x - 25, ft.y);
+          ctx.restore();
+        }
+      }
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function startGame() {
+      initAudio();
+      score = 0;
+      lives = 3;
+      level = 1;
+      hudScore.textContent = '0';
+      hudLives.textContent = '3';
+      currentPlayer = playerNameInput.value.trim() || 'Papai Sales 👔';
+
+      initMap();
+      player.reset();
+      companion = null;
+      enemies[0].pixelX = 9 * TILE_SIZE + 12; enemies[0].pixelY = 8 * TILE_SIZE + 12; enemies[0].state = 'CHASE'; enemies[0].dirX = -1; enemies[0].dirY = 0; enemies[0].lastTurnTileX = -1; enemies[0].lastTurnTileY = -1;
+      enemies[1].pixelX = 8 * TILE_SIZE + 12; enemies[1].pixelY = 10 * TILE_SIZE + 12; enemies[1].state = 'IN_HOUSE'; enemies[1].exitDelay = 60; enemies[1].lastTurnTileX = -1; enemies[1].lastTurnTileY = -1;
+      enemies[2].pixelX = 9 * TILE_SIZE + 12; enemies[2].pixelY = 10 * TILE_SIZE + 12; enemies[2].state = 'IN_HOUSE'; enemies[2].exitDelay = 150; enemies[2].lastTurnTileX = -1; enemies[2].lastTurnTileY = -1;
+      enemies[3].pixelX = 10 * TILE_SIZE + 12; enemies[3].pixelY = 10 * TILE_SIZE + 12; enemies[3].state = 'IN_HOUSE'; enemies[3].exitDelay = 240; enemies[3].lastTurnTileX = -1; enemies[3].lastTurnTileY = -1;
+
+      startScreen.classList.add('hidden');
+      pauseScreen.classList.add('hidden');
+      victoryScreen.classList.add('hidden');
+      gameOverScreen.classList.add('hidden');
+
+      gameState = 'PLAYING';
+      const mtp = document.getElementById('mobileTouchPanel'); if (mtp) mtp.style.display = 'flex';
+      player.bark();
+    }
+
+    function togglePause() {
+      if (gameState === 'PLAYING') {
+        gameState = 'PAUSED';
+        pauseScreen.classList.remove('hidden');
+      } else if (gameState === 'PAUSED') {
+        gameState = 'PLAYING';
+        pauseScreen.classList.add('hidden');
+      }
+    }
+
+    function toggleFS() {
+      const el = document.getElementById('gameContainer');
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // LISTENERS DE TECLADO
+    window.addEventListener('keydown', (e) => {
+      const key = (e.key || '').toLowerCase();
+      const code = e.code || '';
+
+      if (['arrowup', 'w', 'keyw', 'numpad8'].includes(key) || code === 'ArrowUp' || code === 'KeyW' || code === 'Numpad8') {
+        e.preventDefault(); setDirection(0, -1);
+      } else if (['arrowdown', 's', 'keys', 'numpad2'].includes(key) || code === 'ArrowDown' || code === 'KeyS' || code === 'Numpad2') {
+        e.preventDefault(); setDirection(0, 1);
+      } else if (['arrowleft', 'a', 'keya', 'numpad4'].includes(key) || code === 'ArrowLeft' || code === 'KeyA' || code === 'Numpad4') {
+        e.preventDefault(); setDirection(-1, 0);
+      } else if (['arrowright', 'd', 'keyd', 'numpad6'].includes(key) || code === 'ArrowRight' || code === 'KeyD' || code === 'Numpad6') {
+        e.preventDefault(); setDirection(1, 0);
+      } else if (key === 'l' || code === 'KeyL' || key === ' ') {
+        player.bark();
+      } else if (key === 'p' || code === 'KeyP') {
+        togglePause();
+      } else if (key === 'f' || code === 'KeyF') {
+        toggleFS();
+      }
+    });
+
+    // LISTENERS D-PAD TOUCH
+    function bindTouchDirection(selector, dx, dy) {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      const trigger = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDirection(dx, dy);
+      };
+      el.addEventListener('pointerdown', trigger);
+      el.addEventListener('touchstart', trigger, { passive: false });
+      el.addEventListener('mousedown', trigger);
+    }
+
+    bindTouchDirection('.dpad-btn.up', 0, -1);
+    bindTouchDirection('.dpad-btn.down', 0, 1);
+    bindTouchDirection('.dpad-btn.left', -1, 0);
+    bindTouchDirection('.dpad-btn.right', 1, 0);
+
+    btnBarkTouch.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      player.bark();
+    });
+
+    // SWIPE TOUCHMOVE
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let swipeTriggered = false;
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.target.closest && e.target.closest('.header-btn, .action-touch-btn, .dpad-btn, .btn-main, .btn-alt, input')) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      swipeTriggered = false;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!touchStartX || !touchStartY || swipeTriggered) return;
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+      if (Math.hypot(dx, dy) > 18) {
+        swipeTriggered = true;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          setDirection(dx > 0 ? 1 : -1, 0);
+        } else {
+          setDirection(0, dy > 0 ? 1 : -1);
+        }
+      }
+    }, { passive: true });
+
+    // CLIQUE NO CANVAS
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+      const dx = clickX - player.pixelX;
+      const dy = clickY - player.pixelY;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        setDirection(dx > 0 ? 1 : -1, 0);
+      } else {
+        setDirection(0, dy > 0 ? 1 : -1);
+      }
+    });
+
+    // BOTÕES DE TELA
+    btnStart.addEventListener('click', startGame);
+    btnStartFS.addEventListener('click', () => { toggleFS(); startGame(); });
+    btnResume.addEventListener('click', togglePause);
+    btnRestart.addEventListener('click', startGame);
+    btnNextLevel.addEventListener('click', () => {
+      level++;
+      player.speed += 0.2;
+      enemies.forEach(e => e.speed += 0.18);
+      initMap();
+      player.reset();
+      companion = null;
+      enemies[0].pixelX = 9 * TILE_SIZE + 12; enemies[0].pixelY = 8 * TILE_SIZE + 12; enemies[0].state = 'CHASE'; enemies[0].dirX = -1; enemies[0].dirY = 0; enemies[0].lastTurnTileX = -1; enemies[0].lastTurnTileY = -1;
+      enemies[1].pixelX = 8 * TILE_SIZE + 12; enemies[1].pixelY = 10 * TILE_SIZE + 12; enemies[1].state = 'IN_HOUSE'; enemies[1].exitDelay = 60; enemies[1].lastTurnTileX = -1; enemies[1].lastTurnTileY = -1;
+      enemies[2].pixelX = 9 * TILE_SIZE + 12; enemies[2].pixelY = 10 * TILE_SIZE + 12; enemies[2].state = 'IN_HOUSE'; enemies[2].exitDelay = 140; enemies[2].lastTurnTileX = -1; enemies[2].lastTurnTileY = -1;
+      enemies[3].pixelX = 10 * TILE_SIZE + 12; enemies[3].pixelY = 10 * TILE_SIZE + 12; enemies[3].state = 'IN_HOUSE'; enemies[3].exitDelay = 220; enemies[3].lastTurnTileX = -1; enemies[3].lastTurnTileY = -1;
+      victoryScreen.classList.add('hidden');
+      gameState = 'PLAYING';
+      player.bark();
+    });
+
+    btnPause.addEventListener('click', togglePause);
+    btnFS.addEventListener('click', toggleFS);
+    btnSound.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      btnSound.innerHTML = soundEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+    });
+
+    // SELEÇÃO RÁPIDA DE NOME
+    document.querySelectorAll('.badge-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.badge-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        playerNameInput.value = btn.dataset.name;
+        currentPlayer = btn.dataset.name;
+      });
+    });
+
+    btnShareZap.addEventListener('click', () => {
+      const msg = '🏆 RANKING DA FAMÍLIA SALES!\nFiz ' + score + ' pontos no jogo ' + pName + ' em: A Fuga do Banho! 🐾🛁\nConsegue bater meu recorde?';
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    });
+
+    initMap();
+    renderLeaderboard();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
